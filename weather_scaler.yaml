@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: my-deploy
+spec:
+  selector:
+    matchLabels:
+      run: nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: {}
+status: {}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: weather-scaledobject
+  labels:
+    deploymentName: my-deploy
+spec:
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  pollingInterval: 3  # Optional. Default: 30 seconds
+  cooldownPeriod:  5 # Optional. Default: 300 seconds
+  scaleTargetRef:
+    name: my-deploy
+  triggers:
+  - type: weather
+    metadata:
+      host:             "https://www.metaweather.com/api/location/2344116/"
+      threshold:        "1"
+      preference:       "TheTemp"
+
